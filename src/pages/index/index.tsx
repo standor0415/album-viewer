@@ -1,45 +1,39 @@
-import { useEffect, useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useRecoilValueLoadable } from 'recoil';
+import { imageData } from '@recoil/selectors/imageSelectors';
 import CommonHeader from '@components/common/header/CommonHeader';
 import CommonSearchBar from '@components/common/searchBar/CommonSearchBar';
 import CommonNav from '@components/common/navigation/CommonNav';
 import CommonFooter from '@components/common/footer/CommonFooter';
 import Card from './components/Card';
 import styles from './styles/index.module.scss';
-import axios from 'axios';
 import type { CardDTO } from './types/card';
+import DetailDialog from '@components/common/dialog/DetailDialog';
+import Loading from './components/Loading';
 
-function idex() {
-  const [imgUrls, setImgUrls] = useState([]);
-  const getData = async () => {
-    // Open api 호출
-    const API_URL = 'https://api.unsplash.com/search/photos';
-    const API_KEY = 'NYXW-zdx6m9ImTZ22XWLlmCgvueyOHshcDp1_LTM5bw';
-    const PER_PAGE = 30;
+function index() {
+  const imgSelector = useRecoilValueLoadable(imageData);
+  const [imgData, setImgData] = useState<CardDTO>();
+  const [open, setOpen] = useState<boolean>(false); // Dialog 열기 닫기 상태
 
-    const searchValue = 'cat'; // 임시 검색어
-    const pageValue = 100; // 임시 페이지
-    try {
-      const res = await axios.get(
-        `${API_URL}?query=${searchValue}&client_id=${API_KEY}&page=${pageValue}&per_page=${PER_PAGE}`
-      );
-
-      console.log(res);
-
-      if (res.status === 200) {
-        setImgUrls(res.data.results);
-      }
-    } catch (error) {
-      console.log(error);
+  const CARD_LIST = useMemo(() => {
+    // imgSelector.state 값은 hasValue, hasError, loading 총 3가지 값이 있다.
+    if (imgSelector.state === 'hasValue') {
+      const res = imgSelector.contents.results.map((card: CardDTO) => {
+        return (
+          <Card
+            data={card}
+            key={card.id}
+            handleDialog={setOpen}
+            handleSetData={setImgData}
+          />
+        );
+      });
+      return res;
+    } else {
+      return <Loading />;
     }
-  };
-
-  useEffect(() => {
-    getData();
-  }, []);
-
-  const cardList = imgUrls.map((card: CardDTO) => {
-    return <Card data={card} key={card.id} />;
-  });
+  }, [imgSelector]);
 
   return (
     <div className={styles.page}>
@@ -56,11 +50,12 @@ function idex() {
             <CommonSearchBar />
           </div>
         </div>
-        <div className={styles.page__contents__imageBox}>{cardList}</div>
+        <div className={styles.page__contents__imageBox}>{CARD_LIST}</div>
       </div>
       <CommonFooter />
+      {open && <DetailDialog data={imgData} handleDialog={setOpen} />}
     </div>
   );
 }
 
-export default idex;
+export default index;

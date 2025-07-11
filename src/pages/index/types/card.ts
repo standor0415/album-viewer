@@ -45,10 +45,41 @@ export interface CardDTO {
 
   user: {
     id: string;
+    updated_at: string;
     username: string;
     name: string;
     first_name: string;
-    // 필요하면 더 추가 가능
-    [key: string]: any;
+    last_name?: string | null;
+    twitter_username?: string | null;
+    portfolio_url?: string | null;
+    bio?: string | null;
+    location?: string | null;
+    links: {
+      self: string;
+      html: string;
+      photos: string;
+      likes: string;
+      portfolio: string;
+      following: string;
+      followers: string;
+    };
+    profile_image: {
+      small: string;
+      medium: string;
+      large: string;
+    };
+    instagram_username?: string | null;
+    total_collections: number;
+    total_likes: number;
+    total_photos: number;
+    total_promoted_photos: number;
+    accepted_tos: boolean;
+    for_hire: boolean;
+    social?: {
+      instagram_username?: string;
+      portfolio_url?: string;
+      twitter_username?: string;
+      paypal_email?: string;
+    };
   };
 }
